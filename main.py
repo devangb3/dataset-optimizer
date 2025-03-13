@@ -8,10 +8,9 @@ load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
 
-# Function to analyze dataset
 def analyze_dataset(file_path):
     df = pd.read_csv(file_path)
-    summary = df.describe().to_string()  # Basic stats
+    summary = df.describe().to_string()
     prompt = f"Analyze this dataset summary and highlight potential issues:\n{summary}"
     response = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -23,7 +22,6 @@ def analyze_dataset(file_path):
     )
     return response.choices[0].message.content
 
-# Function to suggest improvements
 def suggest_improvements(analysis):
     prompt = f"Based on this analysis:\n{analysis}\nSuggest preprocessing steps to improve the dataset."
     response = client.chat.completions.create(
@@ -36,10 +34,24 @@ def suggest_improvements(analysis):
     )
     return response.choices[0].message.content
 
-# Example usage
+def write_script(file_path):
+    df = pd.read_csv(file_path)
+    data = df.head(50)
+    prompt= f"Write a python script on:\n{data}\n to perform data analysis on it and derive interesting insights from the data, do analysis on % of LOC reduced, comparison between model performances, skip radon score metric"
+    response = client.chat.completions.create(
+    model ="o3-mini",
+    messages = [
+        {"role" : "system", "content": "You are an expert data scientist able to gather insighful info from CSVs"},
+        {"role" : "user", "content": prompt}
+    ]
+    )
+    return response.choices[0].message.content
+
 if __name__ == "__main__":
-    file_path = "ECS 260 Tracking - Sheet1.csv"  # Replace with your dataset
-    analysis = analyze_dataset(file_path)
-    print("Dataset Analysis:\n", analysis)
-    suggestions = suggest_improvements(analysis)
-    print("\nImprovement Suggestions:\n", suggestions)
+    file_path = "ECS 260 Tracking - Sheet1.csv"
+    #analysis = analyze_dataset(file_path)
+    #print("Dataset Analysis:\n", analysis)
+    #suggestions = suggest_improvements(analysis)
+    #print("\nImprovement Suggestions:\n", suggestions)
+    code = write_script(file_path)
+    print("\n Code:\n", code)
